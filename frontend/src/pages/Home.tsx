@@ -19,8 +19,11 @@ export default function Home() {
   });
 
   return (
-    <main className={styles.main}>
+    <section className={styles.wrap}>
       <h1 className={styles.title}>ZeroBite</h1>
+      <p className={styles.lead}>
+        Real-time food donation and waste management.
+      </p>
 
       {isLoading && <p className={styles.status}>Checking backend…</p>}
 
@@ -40,6 +43,6 @@ export default function Home() {
           </span>
         </p>
       )}
-    </main>
+    </section>
   );
 }

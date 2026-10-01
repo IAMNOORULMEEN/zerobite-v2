@@ -1,18 +1,20 @@
-.main {
-  min-height: 100%;
+.wrap {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-  gap: 1rem;
-  text-align: center;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 2rem 0;
 }
 
 .title {
   margin: 0;
   font-size: 1.75rem;
-  font-weight: 600;
+  font-weight: 700;
+}
+
+.lead {
+  margin: 0;
+  color: var(--color-muted);
 }
 
 .status {
@@ -31,7 +33,6 @@
 }
 
 .hint {
-  max-width: 32rem;
   color: var(--color-muted);
   font-size: 0.875rem;
 }
