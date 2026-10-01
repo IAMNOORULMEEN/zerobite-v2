@@ -18,3 +18,4 @@ dist/
 .DS_Store
 celerybeat-schedule*
 celerybeat-schedule*
+token.txt
