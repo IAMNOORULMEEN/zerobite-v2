@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.http import JsonResponse
 from django.urls import include, path
@@ -23,3 +25,7 @@ urlpatterns = [
         name="docs",
     ),
 ]
+
+if settings.DEBUG:
+    # Serve user-uploaded media (avatars, NGO docs) during development only.
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

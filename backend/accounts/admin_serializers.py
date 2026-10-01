@@ -1,3 +1,4 @@
+from django.urls import reverse
 from rest_framework import serializers
 
 from .models import NGOProfile
@@ -25,11 +26,12 @@ class NGOReviewSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
     def get_document_url(self, obj) -> str | None:
+        """Return the admin-only streaming endpoint, never the raw media URL."""
         if not obj.verification_document:
             return None
         request = self.context.get("request")
-        url = obj.verification_document.url
-        return request.build_absolute_uri(url) if request else url
+        path = reverse("accounts_admin:ngo-document", args=[obj.pk])
+        return request.build_absolute_uri(path) if request else path
 
 
 class NGORejectSerializer(serializers.Serializer):
