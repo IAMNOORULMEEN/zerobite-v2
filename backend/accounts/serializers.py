@@ -6,6 +6,9 @@ from .models import DonorProfile, NGOProfile, VolunteerProfile
 
 User = get_user_model()
 
+ALLOWED_AVATAR_TYPES = {"image/jpeg", "image/png", "image/webp"}
+MAX_AVATAR_BYTES = 2 * 1024 * 1024  # 2 MB
+
 
 # --- Output serializers (read-only) ---
 
@@ -129,7 +132,6 @@ class RegisterSerializer(serializers.Serializer):
                 )
             attrs["registration_number"] = reg_num
 
-        # Ignore profile fields that don't belong to the chosen role.
         if role != User.Role.DONOR:
             for f in ("business_name", "donor_type"):
                 attrs.pop(f, None)
@@ -201,3 +203,53 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("full_name", "phone", "avatar")
+
+    def validate_avatar(self, value):
+        if value is None:
+            return value
+        content_type = getattr(value, "content_type", None)
+        if content_type not in ALLOWED_AVATAR_TYPES:
+            raise serializers.ValidationError(
+                "Avatar must be a JPEG, PNG or WebP image."
+            )
+        if value.size > MAX_AVATAR_BYTES:
+            raise serializers.ValidationError("Avatar must be 2 MB or smaller.")
+        return value
+
+
+# --- Password reset / change ---
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+    token = serializers.CharField()
+    new_password = serializers.CharField(write_only=True, style={"input_type": "password"})
+
+    def validate_new_password(self, value):
+        validate_password(value)
+        return value
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(write_only=True, style={"input_type": "password"})
+    new_password = serializers.CharField(write_only=True, style={"input_type": "password"})
+
+    def validate_old_password(self, value):
+        user = self.context["request"].user
+        if not user.check_password(value):
+            raise serializers.ValidationError("Old password is incorrect.")
+        return value
+
+    def validate_new_password(self, value):
+        validate_password(value, user=self.context["request"].user)
+        return value
+
+    def validate(self, attrs):
+        if attrs["old_password"] == attrs["new_password"]:
+            raise serializers.ValidationError(
+                {"new_password": "New password must be different from the old one."}
+            )
+        return attrs
